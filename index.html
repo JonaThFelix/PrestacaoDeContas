@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prestação de Contas - ALFORGE</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -75,12 +77,12 @@
     <!-- Adicionando as bibliotecas necessárias -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.24/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h2>Prestação de Contas - Alforge Segurança</h2> </br></br>
-        <div id="dataAtual">Data: <span id="dataAtual"></span></div> </br>
+    <div class="container" id="relatorio">
+        <h2>Prestação de Contas - Alforge Segurança</h2>
+        <div id="dataAtual">Data: <span id="dataAtual"></span></div>
         <input type="text" id="nome" placeholder="Nome" required>
         <input type="text" id="cargo" placeholder="Cargo" required>
         <input type="text" id="filial" placeholder="Filial" required>
@@ -125,10 +127,8 @@
     </div>
     
     <script>
-        // Atualiza a data atual
         document.getElementById('dataAtual').innerText = new Date().toLocaleDateString('pt-BR');
 
-        // Mostra o campo de pagamento conforme a seleção
         function mostrarCampoPagamento() {
             document.getElementById('campoPix').classList.add('hidden');
             document.getElementById('campoDadosBancarios').classList.add('hidden');
@@ -139,7 +139,6 @@
             }
         }
 
-        // Adiciona uma despesa à tabela
         let total = 0;
         function adicionarDespesa() {
             let tipo = document.getElementById('tipoDespesa').value;
@@ -156,7 +155,6 @@
             }
         }
 
-        // Remove uma despesa da tabela
         function removerDespesa(elemento, valor) {
             total -= valor;
             document.getElementById('totalDespesas').innerText = total.toFixed(2);
@@ -164,24 +162,15 @@
             calcularSaldo();
         }
 
-        // Calcula o saldo final
         function calcularSaldo() {
             let antecipacao = parseFloat(document.getElementById('antecipacao').value) || 0;
             let saldoFinal = total - antecipacao;
             document.getElementById('saldoFinal').innerText = saldoFinal.toFixed(2);
-
-            if (saldoFinal < 0) {
-                document.getElementById('saldoInfo').innerText = 'Devo devolver a Alforge a quantia de R$ ' + Math.abs(saldoFinal).toFixed(2);
-                document.getElementById('saldoInfo').style.color = '#d9534f';
-            } else if (saldoFinal > 0) {
-                document.getElementById('saldoInfo').innerText = 'A empresa deve me devolver a quantia de R$ ' + saldoFinal.toFixed(2);
-                document.getElementById('saldoInfo').style.color = '#5cb85c';
-            } else {
-                document.getElementById('saldoInfo').innerText = '';
-            }
+            document.getElementById('saldoInfo').innerText = saldoFinal < 0 ? 
+                `Devo devolver a Alforge R$ ${Math.abs(saldoFinal).toFixed(2)}` : 
+                saldoFinal > 0 ? `A empresa deve me devolver R$ ${saldoFinal.toFixed(2)}` : '';
         }
 
-        // Exporta a tabela para Excel
         function exportarExcel() {
             const table = document.getElementById('listaDespesas');
             const ws = XLSX.utils.table_to_sheet(table);
@@ -190,33 +179,22 @@
             XLSX.writeFile(wb, "prestacao_de_contas.xlsx");
         }
 
-        // Exporta a tabela para PDF
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const doc = new jsPDF('p', 'mm', 'a4'); // Define o PDF no formato A4
 
-            const table = document.getElementById('listaDespesas');
-            const rows = table.querySelectorAll('tr');
-            let data = [];
+            const elemento = document.querySelector('.container'); // Captura a tela principal
 
-            rows.forEach(row => {
-                const cols = row.querySelectorAll('td, th');
-                let rowData = [];
-                cols.forEach(col => {
-                    rowData.push(col.innerText);
-                });
-                data.push(rowData);
+            html2canvas(elemento, { scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png'); // Converte para imagem
+                const imgWidth = 210; // Largura da página A4
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                doc.save("prestacao_de_contas.pdf"); // Salva o PDF
             });
-
-            // Adiciona a tabela ao PDF
-            doc.autoTable({
-                head: [data[0]], // Cabeçalho da tabela
-                body: data.slice(1), // Dados da tabela
-            });
-
-            // Salva o PDF
-            doc.save("prestacao_de_contas.pdf");
         }
+
     </script>
 </body>
 </html>
