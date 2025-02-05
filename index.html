@@ -82,7 +82,7 @@
 <body>
     <div class="container" id="relatorio">
         <h2>Prestação de Contas - Alforge Segurança</h2>
-        <div id="dataAtual">Data: <span id="dataAtual"></span></div>
+        <div id="dataAtual">Data: <span id="dataAtual"></span></div></br>
         <input type="text" id="nome" placeholder="Nome" required>
         <input type="text" id="cargo" placeholder="Cargo" required>
         <input type="text" id="filial" placeholder="Filial" required>
@@ -123,7 +123,7 @@
         <div class="saldo-info" id="saldoInfo"></div>
         
         <button onclick="exportarExcel()">Exportar para Excel</button>
-        <button onclick="exportarPDF()">Exportar para PDF</button>
+        <button onclick="exportarPDF()">Imprimir ou Salvar PDF</button>
     </div>
     
     <script>
@@ -179,21 +179,38 @@
             XLSX.writeFile(wb, "prestacao_de_contas.xlsx");
         }
 
+        // Função que realiza a exportação está com um bug, mas ainda estou trabalhando
+        // a função está imprimindo duplicado a página, ao invéz de trazer o resultado por páginas
+        // fica duplicando a mesma página.
+
+        // function exportarPDF() {
+        //     const { jsPDF } = window.jspdf;
+
+        //     const elemento = document.querySelector('.container'); // Captura toda a área da tela
+
+        //     html2canvas(elemento, {
+        //         scale: 3, // Aumenta a resolução para um PDF mais nítido
+        //         useCORS: true // Evita problemas com fontes e estilos
+        //     }).then(canvas => {
+        //         const imgData = canvas.toDataURL('image/png');
+        //         const imgWidth = 210; // Largura A4 em mm
+        //         const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        //         const doc = new jsPDF('p', 'mm', 'a4');
+
+        //         // Ajusta a altura da imagem ao PDF sem quebras
+        //         doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+        //         doc.save("prestacao_de_contas.pdf");
+        //     });
+        // }
+
+        // função para imprimir, mas fácil até realizar a correção do bug da exportação
         function exportarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4'); // Define o PDF no formato A4
-
-            const elemento = document.querySelector('.container'); // Captura a tela principal
-
-            html2canvas(elemento, { scale: 2 }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png'); // Converte para imagem
-                const imgWidth = 210; // Largura da página A4
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-                doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-                doc.save("prestacao_de_contas.pdf"); // Salva o PDF
-            });
+            window.print(); // Abre a tela de impressão
         }
+
+
 
     </script>
 </body>
