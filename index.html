@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prestação de Contas - ALFORGE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+        input, select, button {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: block;
+        }
+        button {
+            background-color: #2c56af;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th, td {
+            padding: 8px;
+        }
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .saldo-info {
+            font-size: 16px;
+            font-weight: bold;
+            color: #d9534f;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+        h2, h3, #dataAtual {
+            text-align: center;
+        }
+    </style>
+    <!-- Adicionando as bibliotecas necessárias -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.24/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Prestação de Contas - Alforge Segurança</h2> </br></br>
+        <div id="dataAtual">Data: <span id="dataAtual"></span></div> </br>
+        <input type="text" id="nome" placeholder="Nome" required>
+        <input type="text" id="cargo" placeholder="Cargo" required>
+        <input type="text" id="filial" placeholder="Filial" required>
+        
+        <select id="tipoPagamento" onchange="mostrarCampoPagamento()">
+            <option value="">Selecione o tipo de pagamento</option>
+            <option value="PIX">PIX</option>
+            <option value="Dados Bancários">Dados Bancários</option>
+        </select>
+        <div id="campoPix" class="hidden">
+            <input type="text" id="pix" placeholder="Chave PIX">
+        </div>
+        <div id="campoDadosBancarios" class="hidden">
+            <input type="text" id="banco" placeholder="Banco">
+            <input type="text" id="agencia" placeholder="Agência">
+            <input type="text" id="conta" placeholder="Conta">
+        </div>
+        
+        <h3>Despesas</h3>
+        <input type="text" id="tipoDespesa" placeholder="Tipo de Despesa">
+        <input type="number" id="valorDespesa" placeholder="Valor" min="0" step="0.01">
+        <button onclick="adicionarDespesa()">Adicionar Despesa</button>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Tipo de Despesa</th>
+                    <th>Valor</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="listaDespesas"></tbody>
+        </table>
+        
+        <div class="total">Total: R$ <span id="totalDespesas">0.00</span></div>
+        <input type="number" id="antecipacao" placeholder="Valor Antecipado" min="0" step="0.01" oninput="calcularSaldo()">
+        <div class="total">Saldo Final: R$ <span id="saldoFinal">0.00</span></div>
+        <div class="saldo-info" id="saldoInfo"></div>
+        
+        <button onclick="exportarExcel()">Exportar para Excel</button>
+        <button onclick="exportarPDF()">Exportar para PDF</button>
+    </div>
+    
+    <script>
+        // Atualiza a data atual
+        document.getElementById('dataAtual').innerText = new Date().toLocaleDateString('pt-BR');
+
+        // Mostra o campo de pagamento conforme a seleção
+        function mostrarCampoPagamento() {
+            document.getElementById('campoPix').classList.add('hidden');
+            document.getElementById('campoDadosBancarios').classList.add('hidden');
+            if (document.getElementById('tipoPagamento').value === 'PIX') {
+                document.getElementById('campoPix').classList.remove('hidden');
+            } else if (document.getElementById('tipoPagamento').value === 'Dados Bancários') {
+                document.getElementById('campoDadosBancarios').classList.remove('hidden');
+            }
+        }
+
+        // Adiciona uma despesa à tabela
+        let total = 0;
+        function adicionarDespesa() {
+            let tipo = document.getElementById('tipoDespesa').value;
+            let valor = parseFloat(document.getElementById('valorDespesa').value);
+            if (tipo && valor) {
+                total += valor;
+                document.getElementById('totalDespesas').innerText = total.toFixed(2);
+                let row = document.createElement('tr');
+                row.innerHTML = `<td>${tipo}</td><td>R$ ${valor.toFixed(2)}</td><td><button onclick="removerDespesa(this, ${valor})">Remover</button></td>`;
+                document.getElementById('listaDespesas').appendChild(row);
+                document.getElementById('tipoDespesa').value = '';
+                document.getElementById('valorDespesa').value = '';
+                calcularSaldo();
+            }
+        }
+
+        // Remove uma despesa da tabela
+        function removerDespesa(elemento, valor) {
+            total -= valor;
+            document.getElementById('totalDespesas').innerText = total.toFixed(2);
+            elemento.parentNode.parentNode.remove();
+            calcularSaldo();
+        }
+
+        // Calcula o saldo final
+        function calcularSaldo() {
+            let antecipacao = parseFloat(document.getElementById('antecipacao').value) || 0;
+            let saldoFinal = total - antecipacao;
+            document.getElementById('saldoFinal').innerText = saldoFinal.toFixed(2);
+
+            if (saldoFinal < 0) {
+                document.getElementById('saldoInfo').innerText = 'Devo devolver a Alforge a quantia de R$ ' + Math.abs(saldoFinal).toFixed(2);
+                document.getElementById('saldoInfo').style.color = '#d9534f';
+            } else if (saldoFinal > 0) {
+                document.getElementById('saldoInfo').innerText = 'A empresa deve me devolver a quantia de R$ ' + saldoFinal.toFixed(2);
+                document.getElementById('saldoInfo').style.color = '#5cb85c';
+            } else {
+                document.getElementById('saldoInfo').innerText = '';
+            }
+        }
+
+        // Exporta a tabela para Excel
+        function exportarExcel() {
+            const table = document.getElementById('listaDespesas');
+            const ws = XLSX.utils.table_to_sheet(table);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Despesas");
+            XLSX.writeFile(wb, "prestacao_de_contas.xlsx");
+        }
+
+        // Exporta a tabela para PDF
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const table = document.getElementById('listaDespesas');
+            const rows = table.querySelectorAll('tr');
+            let data = [];
+
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td, th');
+                let rowData = [];
+                cols.forEach(col => {
+                    rowData.push(col.innerText);
+                });
+                data.push(rowData);
+            });
+
+            // Adiciona a tabela ao PDF
+            doc.autoTable({
+                head: [data[0]], // Cabeçalho da tabela
+                body: data.slice(1), // Dados da tabela
+            });
+
+            // Salva o PDF
+            doc.save("prestacao_de_contas.pdf");
+        }
+    </script>
+</body>
+</html>
