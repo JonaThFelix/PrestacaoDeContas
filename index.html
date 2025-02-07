@@ -1,6 +1,6 @@
 <!--
 --------------------------------------------------------------------------------------------------------------------------------------------------
-DESENVOLVIDO POR JONATHAN FELIX, ANALISTA FINANCEIRO 3 P/ FINS DE MELHORIAS DE PROCESSO DA EMPRESA ALFORGE SEGURANCA PATRIMONIAL LTDA
+DESENVOLVIDO POR JONATHAN FELIX, ANALISTA FINANCEIRO 3 P/ FINS DE MELHORIAS DE PROCESSO
 FASE DE TESTES DE ACEITAÇÃO, A PRINCÍPIO DEIXAR DEPLOY NO GITHUB OU VERCEL PARA ANALISAR A CARGA DE USO DOS SERVIDORES GRATUITOS
 ANÁLISE TÉCNICA: DEIXEI O SCRIPT DO JS E STYLE DO CSS DENTRO DO MESMO INDEX AFIM DE POUPAR PROCESSAMENTO E EVITAR PROBLEMAS NO DEPLOY FINAL,
 COMO O PROJETO É DE FATO PEQUENO E NÃO REQUER OUTRAS TECNOLOGIAS, NÃO HÁ NECESSIDADE NO MOMENTO DE SEPARAR O .CSS, .JS E INDEX.HTML.
@@ -185,7 +185,7 @@ PORTIFÓLIO: https://jonathfelix.github.io/Portifolio/
             document.getElementById('saldoFinal').innerText = saldoFinal.toFixed(2);
             document.getElementById('saldoInfo').innerText = saldoFinal < 0 ? 
                 `Devo devolver a Alforge R$ ${Math.abs(saldoFinal).toFixed(2)}` : 
-                saldoFinal > 0 ? `A empresa deve me devolver R$ ${saldoFinal.toFixed(2)}` : '';
+                saldoFinal > 0 ? `A Alforge deve me devolver R$ ${saldoFinal.toFixed(2)}` : '';
         }
 
         function exportarExcel() {
