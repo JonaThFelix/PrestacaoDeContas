@@ -7,8 +7,8 @@ COMO O PROJETO É DE FATO PEQUENO E NÃO REQUER OUTRAS TECNOLOGIAS, NÃO HÁ NEC
 
 EM 07/02/2025
 
---------------------------------------------------------------------------------------------------------------------------------------------------
-GITHUB: https://github.com/JonaThFelix
-LINKEDIN: https://www.linkedin.com/in/jonathan-felix-a7439119b/
+--------------------------------------------------------------------------------------------------------------------------------------------------</br>
+GITHUB: https://github.com/JonaThFelix </br>
+LINKEDIN: https://www.linkedin.com/in/jonathan-felix-a7439119b/</br>
 PORTIFÓLIO: https://jonathfelix.github.io/Portifolio/
 
